@@ -1,5 +1,6 @@
 package com.jankasper.user;
 
+import com.jankasper.user.dto.UserBalanceResponse;
 import com.jankasper.user.dto.UserRequest;
 import com.jankasper.user.dto.UserResponse;
 import jakarta.validation.Valid;
@@ -51,5 +52,12 @@ public class UserController {
     @PostMapping("/generate")
     public ResponseEntity<UserResponse> generateRandomUser() {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.generateRandomUser());
+    }
+
+    @GetMapping("/{id}/balance")
+    public ResponseEntity<UserBalanceResponse> getUserBalance(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "USD") String currency) {
+        return ResponseEntity.ok(userService.getUserBalanceInCurrency(id, currency));
     }
 }

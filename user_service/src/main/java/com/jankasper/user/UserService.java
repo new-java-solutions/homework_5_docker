@@ -1,11 +1,16 @@
 package com.jankasper.user;
 
+import com.jankasper.user.client.ExchangeServiceClient;
+import com.jankasper.user.dto.ExchangeRateResponse;
+import com.jankasper.user.dto.UserBalanceResponse;
 import com.jankasper.user.dto.UserRequest;
 import com.jankasper.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
@@ -13,6 +18,7 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ExchangeServiceClient exchangeServiceClient;
 
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
@@ -86,6 +92,33 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
         return toResponse(savedUser);
+    }
+
+    public UserBalanceResponse getUserBalanceInCurrency(Long id, String currency) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        String normalizedCurrency = currency.toUpperCase();
+        BigDecimal balanceInUsd = new BigDecimal(user.getBalance());
+
+        // If requested currency is USD, return balance as is
+        if ("USD".equals(normalizedCurrency)) {
+            return UserBalanceResponse.builder()
+                    .userId(user.getId())
+                    .balance(balanceInUsd)
+                    .currency("USD")
+                    .build();
+        }
+
+        // Get exchange rate from exchange service using Feign
+        ExchangeRateResponse exchangeRate = exchangeServiceClient.getExchangeRate("USD", normalizedCurrency);
+        BigDecimal convertedBalance = balanceInUsd.multiply(exchangeRate.rate()).setScale(2, RoundingMode.HALF_UP);
+
+        return UserBalanceResponse.builder()
+                .userId(user.getId())
+                .balance(convertedBalance)
+                .currency(normalizedCurrency)
+                .build();
     }
 
     private UserResponse toResponse(User user) {

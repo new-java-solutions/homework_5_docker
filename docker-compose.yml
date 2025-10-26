@@ -27,6 +27,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/playground
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: password
+      EXCHANGE_SERVICE_URL: http://exchange-service:8081
     depends_on:
       postgres:
         condition: service_healthy
