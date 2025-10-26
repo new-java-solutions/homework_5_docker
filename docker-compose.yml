@@ -11,6 +11,49 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build:
+      context: ./user_service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/playground
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  exchange-service:
+    build:
+      context: ./exchange_service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+
+  gateway-service:
+    build:
+      context: ./gateway_service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_CLOUD_GATEWAY_ROUTES[0]_ID: user-service
+      SPRING_CLOUD_GATEWAY_ROUTES[0]_URI: http://user-service:8080
+      SPRING_CLOUD_GATEWAY_ROUTES[0]_PREDICATES[0]: Path=/api/v1/users/**
+      SPRING_CLOUD_GATEWAY_ROUTES[1]_ID: exchange-service
+      SPRING_CLOUD_GATEWAY_ROUTES[1]_URI: http://exchange-service:8081
+      SPRING_CLOUD_GATEWAY_ROUTES[1]_PREDICATES[0]: Path=/api/v1/exchange/**
+    depends_on:
+      - user-service
+      - exchange-service
 
 volumes:
   postgres_data:
