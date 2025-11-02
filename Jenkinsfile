@@ -21,7 +21,7 @@ pipeline {
             {
               "insecure-registries": ["35.223.206.102:5000"]
             }
-          EOF
+          EOFū
           systemctl --user restart docker
           docker info | sed -n '/Insecure Registries:/,/^$/p'
         '''
@@ -53,9 +53,9 @@ pipeline {
       steps {
         sh """
           # ensure compose uses the new tags (simple approach: env-file)
-          export IMAGE_SERVICE_A=${REGISTRY}/exchange_service:${TAG}
-          export IMAGE_SERVICE_B=${REGISTRY}/user_service:${TAG}
-          export IMAGE_SERVICE_C=${REGISTRY}/gateway_service:${TAG}
+          export IMAGE_EXCHANGE_SERVICE=${REGISTRY}/exchange_service:${TAG}
+          export IMAGE_USER_SERVICE=${REGISTRY}/user_service:${TAG}
+          export IMAGE_GATEWAY_SERVICE=${REGISTRY}/gateway_service:${TAG}
 
           docker compose pull || true
           docker compose up -d --remove-orphans

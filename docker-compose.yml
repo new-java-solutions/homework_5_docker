@@ -18,7 +18,7 @@ services:
       retries: 5
 
   user-service:
-    image: 35.223.206.102:5000/user_app:1
+    image: "${IMAGE_USER_SERVICE:-35.223.206.102:5000/user_app:latest}"
     ports:
       - "8090:8090"
     environment:
@@ -37,8 +37,7 @@ services:
       start_period: 30s
 
   exchange-service:
-    image: 35.223.206.102:5000/exchange_app:1
-
+    image: "${IMAGE_EXCHANGE_SERVICE:-35.223.206.102:5000/exchange_app:latest}"
     #    build:
 #      context: ./exchange_service
 #      dockerfile: Dockerfile
@@ -52,7 +51,7 @@ services:
       start_period: 20s
 
   gateway-service:
-    image: 35.223.206.102:5000/gateway_app:1
+    image: "${IMAGE_GATEWAY_SERVICE:-35.223.206.102:5000/gateway_app:latest}"
     ports:
       - "8092:8092"
     environment:
