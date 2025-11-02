@@ -1,7 +1,7 @@
 pipeline {
   agent any
   environment {
-    REGISTRY = "localhost:5000"       // <— your Nexus Docker (hosted) port
+    REGISTRY = "35.223.206.102:5000"       // <— your Nexus Docker (hosted) port
     CRED_ID  = "nexus-docker"              // Jenkins credentials ID
     TAG      = "build-${env.BUILD_NUMBER}" // or use GIT_COMMIT
     SERVICES = "exchange_service,user_service,gateway_service"
@@ -16,6 +16,14 @@ pipeline {
           steps {
             sh """
             docker info | grep -A2 'Insecure Registries'
+              mkdir -p ~/.config/docker
+              tee ~/.config/docker/daemon.json >/dev/null <<'EOF'
+                {
+                  "insecure-registries": ["35.223.206.102:5000"]
+                }
+              EOF
+              systemctl --user restart docker
+              docker info | sed -n '/Insecure Registries:/,/^$/p'
 
             """
           }
