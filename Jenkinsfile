@@ -12,6 +12,18 @@ pipeline {
       steps { checkout scm }
     }
 
+    stage('Diag docker daemon') {
+      steps {
+        sh '''
+          set -x
+          whoami
+          echo "DOCKER_HOST=${DOCKER_HOST:-unix:///var/run/docker.sock}"
+          docker info | sed -n "/Insecure Registries:/,/^$/p"
+          docker info 2>/dev/null | grep -i '^ rootless' || true
+        '''
+      }
+    }
+
     stage('Build & Push images') {
       steps {
         script {
