@@ -21,7 +21,7 @@ pipeline {
             {
               "insecure-registries": ["35.184.191.162:5000"]
             }
-          EOFū
+          EOF
           systemctl --user restart docker
           docker info | sed -n '/Insecure Registries:/,/^$/p'
         '''
