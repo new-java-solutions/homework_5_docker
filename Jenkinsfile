@@ -16,9 +16,7 @@ pipeline {
       steps {
         script {
           def svcs = SERVICES.split(',')
-          withCredentials([usernamePassword(credentialsId: CRED_ID, usernameVariable: 'U', passwordVariable: 'P')]) {
-            sh "echo $P | docker login $REGISTRY -u $U --password-stdin"
-          }
+          sh "echo 'admin' | docker login $REGISTRY -u admin --password-stdin"
           for (s in svcs) {
             dir(s) {
               sh """
