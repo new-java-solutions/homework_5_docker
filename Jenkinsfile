@@ -12,14 +12,18 @@ pipeline {
       steps { checkout scm }
     }
 
-    stage('Diag docker daemon') {
+    stage('Configure rootless Docker insecure registry (HTTP)') {
       steps {
         sh '''
-          set -x
-          whoami
-          echo "DOCKER_HOST=${DOCKER_HOST:-unix:///var/run/docker.sock}"
-          docker info | sed -n "/Insecure Registries:/,/^$/p"
-          docker info 2>/dev/null | grep -i '^ rootless' || true
+          set -euxo pipefail
+          mkdir -p ~/.config/docker
+          tee ~/.config/docker/daemon.json >/dev/null <<'EOF'
+            {
+              "insecure-registries": ["35.223.206.102:5000"]
+            }
+          EOF
+          systemctl --user restart docker
+          docker info | sed -n '/Insecure Registries:/,/^$/p'
         '''
       }
     }
