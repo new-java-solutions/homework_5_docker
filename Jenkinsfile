@@ -17,13 +17,9 @@ pipeline {
         sh '''
         docker info | grep -A2 'Insecure Registries'
           mkdir -p ~/.config/docker
-          tee ~/.config/docker/daemon.json >/dev/null <<'EOF'
-            {
-              "insecure-registries": ["35.184.191.162:5000"]
-            }
-          EOF
-          systemctl --user restart docker
-          docker info | sed -n '/Insecure Registries:/,/^$/p'
+          echo '{ "insecure-registries": ["35.184.191.162:5000"] }' | sudo tee /etc/docker/daemon.json
+          sudo systemctl restart docker
+          docker info | grep -A2 'Insecure Registries'
         '''
       }
     }
