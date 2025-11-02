@@ -12,22 +12,21 @@ pipeline {
       steps { checkout scm }
     }
 
-        stage('Docker') {
-          steps {
-            sh """
-            docker info | grep -A2 'Insecure Registries'
-              mkdir -p ~/.config/docker
-              tee ~/.config/docker/daemon.json >/dev/null <<'EOF'
-                {
-                  "insecure-registries": ["35.223.206.102:5000"]
-                }
-              EOF
-              systemctl --user restart docker
-              docker info | sed -n '/Insecure Registries:/,/^$/p'
-
-            """
-          }
-        }
+    stage('Docker') {
+      steps {
+        sh '''
+        docker info | grep -A2 'Insecure Registries'
+          mkdir -p ~/.config/docker
+          tee ~/.config/docker/daemon.json >/dev/null <<'EOF'
+            {
+              "insecure-registries": ["35.223.206.102:5000"]
+            }
+          EOF
+          systemctl --user restart docker
+          docker info | sed -n '/Insecure Registries:/,/^$/p'
+        '''
+      }
+    }
 
 
     stage('Build & Push images') {
